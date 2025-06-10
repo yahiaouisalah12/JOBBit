@@ -1,12 +1,11 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:memoire/Compane/HoneCompane.dart';
-
 import 'package:memoire/Tabbar.dart';
 import 'package:http/http.dart' as http;
 import 'package:memoire/auth/self.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -22,11 +21,11 @@ class _LoginState extends State<Login> {
   TextEditingController _password = TextEditingController();
   bool _isVisible = false;
   // Add user type selection
-  String _userType = 'jobseeker';
+  String _userType = 'jobseeker'; //sjdfsjs
 
   Future<void> LoginJobSeeker() async {
     String baseUrl =
-        "https://f7ec-154-240-177-190.ngrok-free.app/api/Auth/LogInJobSeeker";
+        "https://b5b9-105-235-132-187.ngrok-free.app/api/Auth/LogInJobSeeker";
 
     try {
       final response = await http.post(
@@ -45,14 +44,52 @@ class _LoginState extends State<Login> {
         final data = jsonDecode(response.body);
         print('Login successful: ${response.body}');
 
-        // You can store the token in shared preferences here
-        // final token = data['token'];
-        // await SharedPreferences.getInstance().then((prefs) {
-        //   prefs.setString('token', token);
-        // });
+        // --- START: Save jobSeekerID to SharedPreferences ---
+        try {
+          // Extract jobSeekerID from the response data
+          final jobSeekerInfo = data['allJobSeekerInfo'];
+          if (jobSeekerInfo != null && jobSeekerInfo['jobSeekerID'] != null) {
+            final int jobSeekerId = jobSeekerInfo['jobSeekerID'];
 
-        Navigator.of(context)
-            .pushReplacement(MaterialPageRoute(builder: (context) => Tabbar()));
+            // Get SharedPreferences instance
+            final prefs = await SharedPreferences.getInstance();
+
+            // Save the jobSeekerID
+            await prefs.setInt('jobSeekerID', jobSeekerId);
+            print('Saved jobSeekerID: $jobSeekerId to SharedPreferences');
+
+            // Optionally, save the user type as well
+            await prefs.setString('userType', 'jobseeker');
+
+            // Navigate AFTER saving
+            Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (context) => Tabbar()));
+          } else {
+            // Handle case where jobSeekerID is missing in response
+            print('Error: jobSeekerID not found in login response');
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                  content: Text(
+                      'Login successful, but failed to get job seeker details.')),
+            );
+
+            // Navigate anyway as fallback
+            Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (context) => Tabbar()));
+          }
+        } catch (e) {
+          // Handle potential errors during saving or parsing
+          print('Error saving jobSeekerID to SharedPreferences: $e');
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+                content: Text('Login successful, but failed to save session.')),
+          );
+
+          // Navigate anyway as fallback
+          Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (context) => Tabbar()));
+        }
+        // --- END: Save jobSeekerID to SharedPreferences ---
       } else {
         // Login failed
         print('Login failed: ${response.body}');
@@ -70,7 +107,7 @@ class _LoginState extends State<Login> {
 
   Future<void> LoginCompany() async {
     String baseUrl =
-        "https://f7ec-154-240-177-190.ngrok-free.app/api/Auth/LogInCompany";
+        "https://b5b9-105-235-132-187.ngrok-free.app/api/Auth/LogInCompany";
 
     try {
       final response = await http.post(
@@ -89,15 +126,44 @@ class _LoginState extends State<Login> {
         final data = jsonDecode(response.body);
         print('Company login successful: ${response.body}');
 
-        // You can store the token in shared preferences here
-        // final token = data['token'];
-        // await SharedPreferences.getInstance().then((prefs) {
-        //   prefs.setString('token', token);
-        //   prefs.setString('userType', 'company');
-        // });
+        // --- START: Save companyID to SharedPreferences ---
+        try {
+          // Extract companyID from the response data
+          final companyInfo = data['allCompanyInfo'];
+          if (companyInfo != null && companyInfo['companyID'] != null) {
+            final int companyId = companyInfo['companyID'];
 
-        Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => Honecompane()));
+            // Get SharedPreferences instance
+            final prefs = await SharedPreferences.getInstance();
+
+            // Save the companyID
+            await prefs.setInt('companyID', companyId);
+            print('Saved companyID: $companyId to SharedPreferences');
+
+            // Optionally, save the user type as well
+            await prefs.setString('userType', 'company');
+
+            // Navigate AFTER saving
+            Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (context) => Honecompane()));
+          } else {
+            // Handle case where companyID is missing in response
+            print('Error: companyID not found in login response');
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                  content: Text(
+                      'Login successful, but failed to get company details.')),
+            );
+          }
+        } catch (e) {
+          // Handle potential errors during saving or parsing
+          print('Error saving companyID to SharedPreferences: $e');
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+                content: Text('Login successful, but failed to save session.')),
+          );
+        }
+        // --- END: Save companyID to SharedPreferences ---
       } else {
         // Login failed
         print('Company login failed: ${response.body}');
@@ -331,7 +397,7 @@ class _LoginState extends State<Login> {
                               ),
                             ),
                             child: Text(
-                              "Regester",
+                              "Login",
                               style: GoogleFonts.poppins(
                                 color: Colors.white,
                                 fontSize: 16,

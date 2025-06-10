@@ -1,13 +1,11 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'dart:io';
-import 'package:image_picker/image_picker.dart';
 import 'package:dropdown_search/dropdown_search.dart';
-import 'package:memoire/Compane/HoneCompane.dart';
 import 'package:memoire/Servers/api_servers.dart';
 import 'dart:convert';
-
 import 'package:memoire/Tabbar.dart';
+import 'package:memoire/auth/GetstLogin.dart';
 import 'package:multi_select_flutter/dialog/multi_select_dialog_field.dart';
 import 'package:multi_select_flutter/util/multi_select_item.dart';
 
@@ -159,9 +157,9 @@ class _SelfState extends State<SelfandCompany>
 
         _skillMap.clear();
         for (var skill in _Skill) {
-          if (skill.containsKey('skillID') && skill.containsKey('skillName')) {
-            _skillMap[skill['skillName']] = skill['skillID'];
-            print("إضافة مهارة: ${skill['skillName']} (${skill['skillID']})");
+          if (skill.containsKey('skillID') && skill.containsKey('name')) {
+            _skillMap[skill['name']] = skill['skillID'];
+            print("إضافة مهارة: ${skill['name']} (${skill['skillID']})");
           } else {
             print("تنسيق مهارة غير صحيح: $skill");
           }
@@ -251,7 +249,6 @@ class _SelfState extends State<SelfandCompany>
           _lastName.text.isEmpty ||
           _email.text.isEmpty ||
           _password.text.isEmpty ||
-          _Gender.text.isEmpty ||
           _selectedSkillIDs.isEmpty || // ✅ تأكد من أن المهارة تم اختيارها
           _phoneNumber.text.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -317,7 +314,6 @@ class _SelfState extends State<SelfandCompany>
         _email.text,
         _phoneNumber.text,
         _password.text,
-        gender,
         _selectedSkillIDs, // ✅ تمرير المصفوفة مباشرة بعد تعديل الدالة
         _cvFile!.path,
       );
@@ -336,7 +332,7 @@ class _SelfState extends State<SelfandCompany>
 
         // Navigate to next page
         Navigator.of(context)
-            .pushReplacement(MaterialPageRoute(builder: (context) => Tabbar()));
+            .pushReplacement(MaterialPageRoute(builder: (context) => Login()));
       } else if (response.statusCode == 400) {
         // Bad request - invalid data
         final errorData = json.decode(response.body);
@@ -457,8 +453,8 @@ class _SelfState extends State<SelfandCompany>
             content: Text("تم التسجيل بنجاح!"), backgroundColor: Colors.green));
 
         // الانتقال إلى الصفحة التالية
-        Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => Honecompane()));
+        Navigator.of(context)
+            .pushReplacement(MaterialPageRoute(builder: (context) => Login()));
       } else if (response.statusCode == 400) {
         // خطأ في البيانات المرسلة
         final errorData = json.decode(response.body);
@@ -846,7 +842,7 @@ class _SelfState extends State<SelfandCompany>
                                                                 SizedBox(
                                                                     height: 15),
                                                                 Text(
-                                                                  "اضغط هنا لرفع ملف السيرة الذاتية",
+                                                                  "Click here to upload your CV",
                                                                   style:
                                                                       TextStyle(
                                                                     color: Color(
@@ -861,7 +857,7 @@ class _SelfState extends State<SelfandCompany>
                                                                 SizedBox(
                                                                     height: 10),
                                                                 Text(
-                                                                  "يمكنك رفع صورة أو ملف PDF أو DOC",
+                                                                  "You can upload an image or file Pdf , Dox",
                                                                   style:
                                                                       TextStyle(
                                                                     color: Colors
@@ -958,31 +954,6 @@ class _SelfState extends State<SelfandCompany>
                                                           .onUserInteraction,
                                                 ),
                                                 SizedBox(height: 15),
-                                                DropdownButtonFormField<String>(
-                                                  decoration: InputDecoration(
-                                                    labelText: "Gender",
-                                                    border:
-                                                        OutlineInputBorder(),
-                                                  ),
-                                                  items: [
-                                                    DropdownMenuItem(
-                                                        value: "0",
-                                                        child: Text("Male")),
-                                                    DropdownMenuItem(
-                                                        value: "1",
-                                                        child: Text("Female")),
-                                                  ],
-                                                  onChanged: (value) {
-                                                    setState(() {
-                                                      _Gender.text =
-                                                          value ?? "0";
-                                                    });
-                                                  },
-                                                  value: _Gender.text.isNotEmpty
-                                                      ? _Gender.text
-                                                      : null,
-                                                ),
-                                                SizedBox(height: 15),
                                               ],
                                             ),
                                           ),
@@ -1007,7 +978,7 @@ class _SelfState extends State<SelfandCompany>
                                                       _skillMap[skillName]!,
                                                       skillName);
                                                 }).toList(),
-                                                title: Text("اختر المهارات"),
+                                                title: Text("Choose skills"),
                                                 selectedColor: Colors.blue,
                                                 decoration: BoxDecoration(
                                                   border: Border.all(
@@ -1018,7 +989,7 @@ class _SelfState extends State<SelfandCompany>
                                                 buttonIcon:
                                                     Icon(Icons.arrow_drop_down),
                                                 buttonText:
-                                                    Text("اختر المهارات"),
+                                                    Text("Choose skills"),
                                                 onConfirm: (values) {
                                                   setState(() {
                                                     _selectedSkillIDs =

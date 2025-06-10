@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:memoire/HomeScreen.dart';
 import 'package:memoire/Homepage/Bag.dart';
-import 'package:memoire/Homepage/Inbox.dart';
 import 'package:memoire/Homepage/Persone.dart';
 import 'package:memoire/Homepage/Search.dart';
 
@@ -14,10 +13,9 @@ class Tabbar extends StatefulWidget {
 
 class _TabbarState extends State<Tabbar> {
   final List<Widget> _screen = [
-    Homescreen(),
+    HomeJobseeker(),
     SearchScreen(),
-    Bag(),
-    Inbox(),
+    GetJobSeekerApplication(),
     Person()
   ];
 
@@ -43,13 +41,7 @@ class _TabbarState extends State<Tabbar> {
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
           BottomNavigationBarItem(
-            icon: CircleAvatar(
-              backgroundColor: Color(0xFF36305E),
-              child: Icon(Icons.work, color: Colors.white),
-            ),
-            label: '',
-          ),
-          BottomNavigationBarItem(icon: Icon(Icons.message), label: 'Inbox'),
+              icon: Icon(Icons.business_center_outlined), label: 'Application'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Account'),
         ],
       ),
